@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "datafactorymukesh"
+		},
+		"AzureSqlDatabaseLinkedService_password": {
+			"value": ""
+		},
+		"AzureStorageLinkedService_connectionString": {
+			"value": ""
+		},
+		"AzureSqlDatabaseLinkedService_properties_typeProperties_server": {
+			"value": "servermukesh.database.windows.net"
+		},
+		"AzureSqlDatabaseLinkedService_properties_typeProperties_database": {
+			"value": "sqldbmukesh"
+		},
+		"AzureSqlDatabaseLinkedService_properties_typeProperties_userName": {
+			"value": "labadmin"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
