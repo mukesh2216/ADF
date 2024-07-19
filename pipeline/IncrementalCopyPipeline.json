@@ -5,7 +5,14 @@
 			{
 				"name": "LookupOldWaterMarkActivity",
 				"type": "Lookup",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Script1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -29,7 +36,14 @@
 			{
 				"name": "LookupNewWaterMarkActivity",
 				"type": "Lookup",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Script1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -141,11 +155,17 @@
 					"storedProcedureName": "[dbo].[usp_write_watermark]",
 					"storedProcedureParameters": {
 						"LastModifiedtime": {
-							"value": "@{activity('LookupNewWaterMarkActivity').output.firstRow.NewWatermarkvalue}",
+							"value": {
+								"value": "@{activity('LookupNewWaterMarkActivity').output.firstRow.NewWatermarkvalue}",
+								"type": "Expression"
+							},
 							"type": "DateTime"
 						},
 						"TableName": {
-							"value": "@{activity('LookupOldWaterMarkActivity').output.firstRow.TableName}",
+							"value": {
+								"value": "@{activity('LookupOldWaterMarkActivity').output.firstRow.TableName}",
+								"type": "Expression"
+							},
 							"type": "String"
 						}
 					}
@@ -153,6 +173,32 @@
 				"linkedServiceName": {
 					"referenceName": "AzureSqlDatabaseLinkedService",
 					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Script1",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabaseLinkedService",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "IF  NOT EXISTS (SELECT * FROM sys.objects \nWHERE object_id = OBJECT_ID(N'data_source_table') AND type in (N'U'))\n\nBEGIN\n\ncreate table data_source_table\n(\n    PersonID int,\n    Name varchar(255),\n    LastModifytime datetime\n);\n\nINSERT INTO data_source_table\n    (PersonID, Name, LastModifytime)\nVALUES\n    (1, 'aaaa','9/1/2017 12:56:00 AM'),\n    (2, 'bbbb','9/2/2017 5:23:00 AM'),\n    (3, 'cccc','9/3/2017 2:36:00 AM'),\n    (4, 'dddd','9/4/2017 3:21:00 AM'),\n    (5, 'eeee','9/5/2017 8:06:00 AM');\n\n\nend ;\n\n\nIF  NOT EXISTS (SELECT * FROM sys.objects \nWHERE object_id = OBJECT_ID(N'[dbo].[YourTable]') AND type in (N'U'))\n\nBEGIN\ncreate table watermarktable\n(\n\nTableName varchar(255),\nWatermarkValue datetime,\n);\n\nINSERT INTO watermarktable\nVALUES ('data_source_table','1/1/2010 12:00:00 AM')\nend\n\n\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND OBJECT_ID = OBJECT_ID('usp_write_watermark'))\n\nBegin\nCREATE PROCEDURE usp_write_watermark @LastModifiedtime datetime, @TableName varchar(50)\nAS\n\nBEGIN\n\nUPDATE watermarktable\nSET [WatermarkValue] = @LastModifiedtime\nWHERE [TableName] = @TableName\n\nEND\nend\n"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
 				}
 			}
 		],
