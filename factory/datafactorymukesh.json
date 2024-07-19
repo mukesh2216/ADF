@@ -1,0 +1,9 @@
+{
+	"name": "datafactorymukesh",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "25a096a1-6cfd-49f2-bf53-c12f483f91d6",
+		"tenantId": "84f1e4ea-8554-43e1-8709-f0b8589ea118"
+	}
+}
